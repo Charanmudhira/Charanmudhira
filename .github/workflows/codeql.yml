@@ -1,0 +1,168 @@
+# For most //Pateek
+//www.justdoelectronics.com
+ 
+#include <TinyGPS.h>
+#include <SoftwareSerial.h>
+#include <Wire.h>
+SoftwareSerial Gsm(9, 10);
+ 
+char phone_no[] = "+919346124760";
+ 
+TinyGPS gps;
+int state;
+String textMessage;
+void setup() {
+  Serial.begin(9600);
+  Gsm.begin(9600);
+  delay(2000);
+  Serial.print("AT+CMGF=1\r");
+  delay(100);
+  Serial.print("AT+CNMI=2,2,0,0,0\r");
+  delay(100);
+  pinMode(5, INPUT);
+}
+ 
+void loop() {
+  bool newData = false;
+  unsigned long chars;
+  unsigned short sentences, failed;
+ 
+  for (unsigned long start = millis(); millis() - start < 1000;) {
+    while (Serial.available()) {
+      char c = Serial.read();
+      Serial.print(c);
+      if (gps.encode(c))
+        newData = true;
+    }
+  }
+ 
+  if (textMessage.indexOf("LOCAL") >= 0) {
+    float flat, flon;
+    unsigned long age;
+    gps.f_get_position(&flat, &flon, &age);
+    Gsm.print("AT+CMGF=1\r");
+    delay(400);
+    Gsm.print("AT+CMGS=\"");
+    Gsm.print(phone_no);
+    Gsm.println("\"");
+    delay(3000);
+    Gsm.print(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6);
+    Serial.print(",");
+    Gsm.print(flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6);
+    delay(200);
+    Gsm.println((char)26);
+    delay(200);
+    Gsm.println();
+    delay(10000);
+  }
+ 
+  Serial.println(failed);
+  Serial.println("**GPS: check wiring **");
+}                                                   if (state == 0) {
+    float flat, flon;
+    unsigned long age;
+    gps.f_get_position(&flat, &flon, &age);
+    Gsm.print("AT+CMGF=1\r");
+    delay(400);
+    Gsm.print("AT+CMGS=\"");
+    Gsm.print(phone_no);
+    Gsm.println("\"");
+    delay(3000);
+    Gsm.println("Alert I need help... ");
+    //Prateek
+    //www.justdoelectronics.com
+    Gsm.print(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6);
+    Serial.print(",");
+    Gsm.print(",");
+    Gsm.print(flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6);
+    delay(200);
+    Gsm.println((char)26);
+    delay(200);
+    Gsm.println();
+    Serial.print("Alert I need help... ");
+    delay(10000);
+ 
+  } else {
+    delay(10);
+  }, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "main" ]
+  schedule:
+    - cron: '36 6 * * 4'
+
+jobs:
+  analyze:
+    name: Analyze
+    # Runner size impacts CodeQL analysis time. To learn more, please see:
+    #   - https://gh.io/recommended-hardware-resources-for-running-codeql
+    #   - https://gh.io/supported-runners-and-hardware-resources
+    #   - https://gh.io/using-larger-runners
+    # Consider using larger runners for possible analysis time improvements.
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [  ]
+        # CodeQL supports [ 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift' ]
+        # Use only 'java-kotlin' to analyze code written in Java, Kotlin or both
+        # Use only 'javascript-typescript' to analyze code written in JavaScript, TypeScript or both
+        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+        # If you wish to specify custom queries, you can do so here or in a config file.
+        # By default, queries listed here will override any specified in a config file.
+        # Prefix the list here with "+" to use these queries and those in the config file.
+
+        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+        # queries: security-extended,security-and-quality
+
+
+    # Autobuild attempts to build any compiled languages (C/C++, C#, Go, Java, or Swift).
+    # If this step fails, then you should remove it and run the build manually (see below)
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+    # ℹ️ Command-line programs to run using the OS shell.
+    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
+
+    #   If the Autobuild fails above, remove it and uncomment the following three lines.
+    #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
+
+    # - run: |
+    #     echo "Run, Build Application using script"
+    #     ./location_of_script_within_repo/buildscript.sh
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:${{matrix.language}}"
